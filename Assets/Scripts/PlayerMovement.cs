@@ -12,8 +12,25 @@ public class PlayerMovement : MonoBehaviour
     private bool Grounded;
     private bool PlayerIsRunning => Horizontal != 0.0f;
 
-    public bool JumpKey => Input.GetKeyDown(KeyCode.Space);
+    public static PlayerMovement Instance { get; private set; }
+    public PlayerMovement()
+    {
 
+    }
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+    }
+    public bool JumpKey => Input.GetKeyDown(KeyCode.Space);
+    [SerializeField] private GameObject _arm;
     void Start()
     {
         SetInstanceReferences();
@@ -49,6 +66,7 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleCharacterFacing();
         HandleCharacterAnimations();
+        Rotation();
         if (JumpKey && Grounded)
         {
             Jump();
@@ -71,4 +89,9 @@ public class PlayerMovement : MonoBehaviour
         Debug.DrawRay(transform.position, Vector3.down * 0.1f, Color.red);
     }
     #endregion
+    private void Rotation()
+    {
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        _arm.transform.rotation = Quaternion.LookRotation(Vector3.forward, mousePosition - _arm.transform.position);
+    }
 }
