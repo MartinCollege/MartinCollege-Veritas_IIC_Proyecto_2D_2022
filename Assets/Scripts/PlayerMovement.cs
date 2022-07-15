@@ -85,7 +85,7 @@ public class PlayerMovement : MonoBehaviour
         var playerLeftPositionForWallColition = new Vector3(transform.position.x - WallColiderOffset.x, transform.position.y + WallColiderOffset.y, transform.position.z + WallColiderOffset.z);
         var playerRightPositionForWallColition = transform.position + WallColiderOffset;
         var leftColliding = Physics2D.Raycast(playerLeftPositionForWallColition, Vector3.left, 0.1f, layers);
-        var rightColliding = Physics2D.Raycast(playerRightPositionForWallColition, Vector3.right, 0.1f, layers);        
+        var rightColliding = Physics2D.Raycast(playerRightPositionForWallColition, Vector3.right, 0.1f, layers);
         if (Horizontal != 0 && ((!rightColliding && Horizontal > 0) || (!leftColliding && Horizontal < 0)))
             Rigidbody2D.velocity = new Vector2(Horizontal * Speed, Rigidbody2D.velocity.y);
     }
@@ -146,11 +146,15 @@ public class PlayerMovement : MonoBehaviour
         float shotPower = (MouseUpTime - MouseDownTime) / SecondsFireOnHold * 100 ?? 0f;
         Debug.Log("Shot power: " + shotPower + "%");
 
-        Rigidbody2D.velocity = Vector3.zero;
-        Vector3 screenPoint = Camera.main.WorldToScreenPoint(transform.position);
-        Vector3 direction = (Vector3)(Camera.main.WorldToScreenPoint(GameObject.FindGameObjectsWithTag("CannonFire").First().transform.position) - screenPoint);
-        direction.Normalize();
-        Rigidbody2D.AddForce(-1 * direction * (5 * shotPower / 100), ForceMode2D.Impulse);
+
+        if (shotPower > 15)
+        {
+            Rigidbody2D.velocity = Vector3.zero;
+            Vector3 screenPoint = Camera.main.WorldToScreenPoint(transform.position);
+            Vector3 direction = (Vector3)(Camera.main.WorldToScreenPoint(GameObject.FindGameObjectsWithTag("CannonFire").First().transform.position) - screenPoint);
+            direction.Normalize();
+            Rigidbody2D.AddForce(-1 * direction * (5 * shotPower / 100), ForceMode2D.Impulse);
+        }
 
 
         MouseDownTime = null;
