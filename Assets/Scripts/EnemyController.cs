@@ -36,7 +36,7 @@ public class EnemyController : MonoBehaviour
             {
                 detected = true;
                 transform.localScale = new Vector3(direction.x < 0 ? -1.0f : 1.0f, transform.localScale.y, transform.localScale.z);
-                Debug.Log("Player detected.");
+                //Debug.Log("Player detected.");
                 Debug.DrawRay(transform.position, direction * range, Color.green);
             }
             else
