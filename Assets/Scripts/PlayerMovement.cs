@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -17,7 +18,20 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D Rigidbody2D;
     private Animator Animator;
     private float Horizontal;
-    private bool Grounded;
+    private bool _grounded;
+    private bool affectsRecoil = false;
+
+     public bool Grounded
+    {
+        get
+        {
+            return _grounded;
+        }
+        private set
+        {
+            _grounded = value;
+        }
+    }
     private float CurrentTime;
     private bool PlayerIsRunning => Horizontal != 0.0f;
     private float? MouseDownTime;
@@ -25,7 +39,6 @@ public class PlayerMovement : MonoBehaviour
     #endregion
     public PlayerMovement()
     {
-
     }
     private void Awake()
     {
@@ -51,7 +64,10 @@ public class PlayerMovement : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        SetPlayerVelocity();
+        SetPlayerVelocity();        
+    }
+    private void LateUpdate()
+    {
     }
     #region Custom Methods
     private void SetGlobalValues()
@@ -92,9 +108,15 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-        //Seteo de variable para almacenar el momento en el que el usuario presionó el click izquierdo, esto es utilizado para calcular el poder del disparo
+            //Seteo de variable para almacenar el momento en el que el usuario presionó el click izquierdo, esto es utilizado para calcular el poder del disparo
             MouseDownTime = CurrentTime;
-        
+
+            if (!affectsRecoil && Grounded)
+            {
+                affectsRecoil = true;
+                Debug.Log("Setting affects recoil as true");
+            }
+
         }
         else if (Input.GetMouseButtonUp(0))
         {
@@ -142,16 +164,17 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log("Shot power: " + shotPower + "%");
 
         //Condicionamos a que el poder del disparo sea mayor a 15 para que tenga efecto de retroceso
-        if (shotPower > 15)
+        if (shotPower > 15 && affectsRecoil)
         {
-
+            affectsRecoil = false;
+            Debug.Log("Setting affects recoil as false");
             Rigidbody2D.velocity = Vector3.zero;
             //Obtenemos la posición del jugador con relación a la cámara
             Vector3 screenPoint = Camera.main.WorldToScreenPoint(transform.position);
             //Obtenemos la posición del cañon con relación a la cámara
             Vector3 cannonPosition = Camera.main.WorldToScreenPoint(GameObject.FindGameObjectsWithTag("CannonFire").First().transform.position);
             //Restamos las posiciones para obtener la dirección del disparo
-            Vector3 direction = (Vector3)(cannonPosition- screenPoint);
+            Vector3 direction = (Vector3)(cannonPosition - screenPoint);
             //Mantiene la direccion del vector pero con longitudes de 1 o 0, ejemplo  Vector3(0, 0, 5)  pasaría a  Vector3(0, 0, 1) 
             direction.Normalize();
             //Se agrega una fuerza en la dirección contraria (*-1) con el efecto de impulso
